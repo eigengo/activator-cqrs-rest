@@ -10,9 +10,9 @@ import org.json4s.{DefaultFormats, Formats}
 import spray.can.Http
 import spray.http._
 import spray.httpx.Json4sSupport
-import spray.routing.{Directives, HttpService, RequestContext, Route}
+import spray.routing.{Directives, RequestContext, Route}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import scala.util.Random
 
 object RouteesActor {
