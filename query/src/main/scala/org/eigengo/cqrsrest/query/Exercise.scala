@@ -8,12 +8,18 @@ import spray.routing._
 
 import scala.concurrent.ExecutionContext
 
+/**
+ * The exercise read protocol
+ */
 object ExerciseProtocol {
 
   case class Exercise(processName: String, what: String, duration: Int)
 
 }
 
+/**
+ * The exercise query route
+ */
 trait ExerciseRoute extends HttpService with Directives with AskSupport with Json4sSupport {
   import org.eigengo.cqrsrest.query.ExerciseProtocol._
 

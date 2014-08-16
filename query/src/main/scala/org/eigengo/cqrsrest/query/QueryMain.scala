@@ -8,6 +8,9 @@ import org.json4s.{DefaultFormats, Formats}
 import spray.can.Http
 import spray.routing.HttpServiceActor
 
+/**
+ * Wrapper of the query routes in to an actor
+ */
 class QueryMainServiceActor extends HttpServiceActor with ExerciseRoute {
   import scala.concurrent.duration._
 
@@ -16,6 +19,9 @@ class QueryMainServiceActor extends HttpServiceActor with ExerciseRoute {
   override def receive: Receive = runRoute(exerciseRoute)
 }
 
+/**
+ * Query-side main app
+ */
 object QueryMain extends App {
   import scala.concurrent.duration._
 
@@ -25,7 +31,7 @@ object QueryMain extends App {
   implicit private val system = ActorSystem()
   val service = system.actorOf(Props(new QueryMainServiceActor))
 
-  // bind the the router running at localhost:8080, specifying the write side and 1.0.0 API version
+  // bind to the router running at localhost:8080, specifying the write side and 1.0.0 API version
   Router("http://localhost:8080", RouterProtocol.Query, "1.0.0") { parameters =>
     IO(Http)(system) ! Http.Bind(service, interface = parameters.host, port = parameters.port)
   }
