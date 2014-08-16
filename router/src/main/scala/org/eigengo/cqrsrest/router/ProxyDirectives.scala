@@ -1,14 +1,10 @@
 package org.eigengo.cqrsrest.router
 
-import akka.actor.{ActorRefFactory, ActorSystem, ActorRef}
+import akka.actor.ActorSystem
 import akka.io.IO
-import akka.pattern.AskSupport
-import akka.util.Timeout
 import spray.can.Http
 import spray.http._
 import spray.routing._
-
-import scala.util.{Failure, Success}
 
 /**
  * Spray routes for proxying requests
@@ -25,8 +21,8 @@ trait ProxyDirectives {
   private def proxyRequest(updateRequest: RequestContext => HttpRequest)(implicit system: ActorSystem): Route =
     ctx => IO(Http)(system) tell (updateRequest(ctx), ctx.responder)
 
-  private def stripHostHeader(headers: List[HttpHeader] = Nil) =
-    headers filterNot (header => header is (HttpHeaders.Host.lowercaseName))
+  def stripHostHeader(headers: List[HttpHeader] = Nil) =
+    headers filterNot (header => header is HttpHeaders.Host.lowercaseName)
 
   private val updateUri = (_: RequestContext, uri: Uri) => uri
 

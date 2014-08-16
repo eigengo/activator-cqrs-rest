@@ -1,13 +1,13 @@
 package org.eigengo.cqrsrest.router
 
-import java.util.UUID
+import java.net.InetAddress
 
 import akka.actor.ActorRefFactory
 import org.json4s.JsonAST.JString
 import org.json4s.{CustomSerializer, DefaultFormats, Formats}
 import spray.httpx.Json4sSupport
 
-import scala.util.{Random, Failure, Success}
+import scala.util.{Failure, Random, Success}
 
 /**
  * Defines the router protocol
@@ -20,7 +20,7 @@ object RouterProtocol {
   /** The API version being registered; for example "1.0.1" */
   type Version   = String
   /** The reference to the registered side */
-  type Reference = UUID
+  type Reference = String
 
   /** A function that runs when the side registers with the router */
   type Run       = RunParameters => Unit
@@ -91,12 +91,13 @@ object Router extends Json4sSupport {
   private def unregister(routerUrl: String, ref: Reference)(implicit arf: ActorRefFactory): Unit = {
     import arf.dispatcher
     val unregisterPipeline = sendReceive ~> unmarshal[Unregistered]
-    unregisterPipeline(Post(s"$routerUrl/unregister", Unregister(ref)))
+    unregisterPipeline(Delete(s"$routerUrl/register", Unregister(ref)))
   }
 
   def apply(routerUrl: String, side: Side, version: Version)(run: Run)(implicit arf: ActorRefFactory): Unit = {
     import arf.dispatcher
-    val register = Register("0.0.0.0", 10000 + Random.nextInt(55535), version, side)
+    val localhost = InetAddress.getLocalHost.getHostAddress
+    val register = Register(localhost, 10000 + Random.nextInt(55535), version, side)
     val registerPipeline = sendReceive ~> unmarshal[Registered]
     registerPipeline(Post(s"$routerUrl/register", register)).onComplete {
       case Success(r) => run(RunParameters(register.host, register.port, () => unregister(routerUrl, r.ref)))

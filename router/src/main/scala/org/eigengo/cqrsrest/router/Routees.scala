@@ -12,6 +12,7 @@ import spray.http._
 import spray.httpx.Json4sSupport
 import spray.routing.{Directives, HttpService, RequestContext, Route}
 
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
 object RouteesActor {
@@ -29,6 +30,9 @@ class RouteesActor extends Actor {
   private implicit class RichList[A](l: List[A]) {
     def randomElement: A = l(Random.nextInt(l.size))
   }
+
+  private def stripHostHeader(headers: List[HttpHeader] = Nil) =
+    headers filterNot (header => header is HttpHeaders.Host.lowercaseName)
 
   private def findRoutee(uri: Uri, method: HttpMethod): Option[Uri] = {
     val path            = uri.path.tail
@@ -49,12 +53,12 @@ class RouteesActor extends Actor {
 
   def receive: Receive = {
     case cmd@RouterProtocol.Register(_, _, _, _) =>
-      val ref = UUID.randomUUID()
+      val ref = UUID.randomUUID().toString
       routees = routees :+ Routee(ref, cmd.host, cmd.port, cmd.version, cmd.side)
-      sender ! Registered(ref)
+      sender() ! Registered(ref)
     case RouterProtocol.Unregister(ref) =>
       routees = routees.filter(_.ref != ref)
-      sender ! Unregistered(ref)
+      sender() ! Unregistered(ref)
 
     case ctx: RequestContext =>
       val request = ctx.request
@@ -63,13 +67,13 @@ class RouteesActor extends Actor {
         ctx.complete(HttpResponse(status = StatusCodes.BadGateway, entity = HttpEntity(s"No routee for path ${request.uri.path}")))
       }
       { updatedUri =>
-        val updatedRequest = request.copy(uri = updatedUri)
+        val updatedRequest = request.copy(uri = updatedUri, headers = stripHostHeader(request.headers))
         IO(Http)(context.system) tell(updatedRequest, ctx.responder)
       }
   }
 }
 
-trait RouteesRoute extends HttpService with Directives with AskSupport with Json4sSupport {
+trait RouteesRoute extends Directives with AskSupport with Json4sSupport {
   import org.eigengo.cqrsrest.router.RouterProtocol._
 
 import scala.concurrent.duration._
@@ -77,7 +81,7 @@ import scala.concurrent.duration._
   override implicit def json4sFormats: Formats = DefaultFormats + SideSerializer
   implicit val timeout: Timeout = Timeout(1000.milliseconds)
 
-  def routeesRoute(routees: ActorRef): Route =
+  def routeesRoute(routees: ActorRef)(implicit es: ExecutionContext): Route =
     path("register") {
       post {
         entity(as[Register]) { cmd =>

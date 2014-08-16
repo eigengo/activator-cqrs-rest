@@ -10,7 +10,7 @@ import spray.routing.HttpServiceActor
 class RouterMainServiceActor(routeesActor: ActorRef) extends HttpServiceActor with RouteesRoute with ProxyRoute {
 
   implicit val ec = context.dispatcher
-  override def receive: Receive = runRoute(routeesRoute(routeesActor))
+  override def receive: Receive = runRoute(routeesRoute(routeesActor) ~ proxyRoute(routeesActor))
 }
 
 object RouterMain extends App {
