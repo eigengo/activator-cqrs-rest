@@ -48,7 +48,7 @@ trait ExerciseRoute extends HttpService with Directives with AskSupport with Jso
         entity(as[Exercise]) { cmd =>
           onComplete((actors.exercise.apply ? cmd).mapTo[ExerciseBack]) {
             case Success(v) => complete(v)
-            case Failure(e) => complete(e)
+            case Failure(e) => complete(e.getMessage)
           }
         }
       }
@@ -59,7 +59,7 @@ trait ExerciseRoute extends HttpService with Directives with AskSupport with Jso
 class ExerciseActor extends PersistentActor {
 
   override def receiveRecover: Receive = {
-    case _ =>
+    case _ => sender ! ExerciseBack("recover")
   }
 
   override def receiveCommand: Receive = {
