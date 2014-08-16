@@ -7,12 +7,22 @@ import org.json4s.{DefaultFormats, Formats}
 import spray.can.Http
 import spray.routing.HttpServiceActor
 
+/**
+ * The actor wrapper around the routes
+ *
+ * @param routeesActor the actor that maintains the routees
+ */
 class RouterMainServiceActor(routeesActor: ActorRef) extends HttpServiceActor with RouteesRoute with ProxyRoute {
-
   implicit val ec = context.dispatcher
   override def receive: Receive = runRoute(routeesRoute(routeesActor) ~ proxyRoute(routeesActor))
 }
 
+/**
+ * The main app for the router / load balancer.
+ *
+ * It accepts registrations from multiple nodes, each node specifying whether it is the read or write node, and
+ * what API version it implements.
+ */
 object RouterMain extends App {
   import scala.concurrent.duration._
 

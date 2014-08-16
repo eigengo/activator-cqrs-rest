@@ -56,7 +56,12 @@ trait ExerciseRoute extends HttpService with Directives with AskSupport with Jso
 
 }
 
+/**
+ * This actor collects the performed exercise
+ */
 class ExerciseActor extends PersistentActor {
+
+  // TODO: make me do something interesting
 
   override def receiveRecover: Receive = {
     case _ => sender ! ExerciseBack("recover")
