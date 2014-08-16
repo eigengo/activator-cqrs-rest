@@ -3,6 +3,7 @@ package org.eigengo.cqrsrest.write
 import akka.actor.{ActorSystem, Props}
 import akka.io.IO
 import akka.util.Timeout
+import org.eigengo.cqrsrest.router.{RouterProtocol, Router, Registration}
 import org.json4s.{DefaultFormats, Formats}
 import spray.can.Http
 import spray.routing.HttpServiceActor
@@ -18,17 +19,16 @@ class WriteMainServiceActor extends HttpServiceActor with ExerciseRoute {
 object WriteMain extends App {
   import scala.concurrent.duration._
 
-  // listen on all local interfaces
-  private val host: String = "0.0.0.0"
-  private val port: Int = 8081
-
   implicit def json4sFormats: Formats = DefaultFormats
   implicit val timeout: Timeout = Timeout(1000 milliseconds)
 
-  // Check authentication arguments and assign to vals.
-  private val system = ActorSystem()
+  implicit private val system = ActorSystem()
   system.actorOf(Props(new ExerciseActor), actors.exercise.name)
   val service = system.actorOf(Props(new WriteMainServiceActor), "write-service")
-  IO(Http)(system) ! Http.Bind(service, interface = host, port = port)
+
+  // bind the the router running at localhost:8080, specifying the write side and 1.0.0 API version
+  Router("http://localhost:8080", RouterProtocol.Write, "1.0.0") { parameters =>
+    IO(Http)(system) ! Http.Bind(service, interface = parameters.host, port = parameters.port)
+  }
 
 }
