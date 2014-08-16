@@ -14,7 +14,7 @@ object actors {
     /** The actor name */
     val name = "exercise-actor"
     /** The lookup function */
-    def apply(implicit arf: ActorRefFactory): ActorSelection = arf.actorSelection(name)
+    def apply(implicit arf: ActorRefFactory): ActorSelection = arf.actorSelection(s"/user/$name")
   }
 
 }

@@ -97,7 +97,7 @@ import scala.concurrent.duration._
 
 }
 
-trait ProxyRoute extends Directives with ProxyDirectives with AskSupport {
+trait ProxyRoute extends Directives with AskSupport {
 
   /** Route adds user identity header and proxies all requests to given host */
   def proxyRoute(routees: ActorRef): Route = ctx => {

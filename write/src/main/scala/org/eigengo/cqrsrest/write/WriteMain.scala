@@ -24,7 +24,7 @@ object WriteMain extends App {
 
   implicit private val system = ActorSystem()
   system.actorOf(Props(new ExerciseActor), actors.exercise.name)
-  val service = system.actorOf(Props(new WriteMainServiceActor), "write-service")
+  val service = system.actorOf(Props(new WriteMainServiceActor))
 
   // bind the the router running at localhost:8080, specifying the write side and 1.0.0 API version
   Router("http://localhost:8080", RouterProtocol.Write, "1.0.0") { parameters =>
