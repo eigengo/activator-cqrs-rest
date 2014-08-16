@@ -3,7 +3,7 @@ package org.eigengo.cqrsrest.write
 import akka.pattern.AskSupport
 import akka.persistence.PersistentActor
 import akka.util.Timeout
-import org.eigengo.cqrsrest.write.HelloProtocol.HelloBack
+import org.eigengo.cqrsrest.write.ExerciseProtocol.ExerciseBack
 import org.json4s.{DefaultFormats, Formats}
 import spray.httpx.Json4sSupport
 import spray.routing.{HttpService, Directives, Route}
@@ -12,19 +12,19 @@ import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
 /**
- * Defines the REST protocol for the ``HelloRoute``. At this moment, it includes the ``Hello`` request and
- * ``HelloBack`` response.
+ * Defines the REST protocol for the ``ExerciseRoute``. At this moment, it includes the ``Exercise`` request and
+ * ``ExerciseBack`` response.
  *
  * It is expected that these values will be marshalled and unmarshalled into JSON
  */
-object HelloProtocol {
-  sealed trait HelloActorMessage
-  case class Hello(hi: String) extends HelloActorMessage
-  case class HelloBack(helloBackTo: String) extends HelloActorMessage
+object ExerciseProtocol {
+  sealed trait ExerciseActorMessage
+  case class Exercise(what: String) extends ExerciseActorMessage
+  case class ExerciseBack(result: String) extends ExerciseActorMessage
 }
 
 /**
- * Defines the ``Route`` that handles the ``/hello`` URLs. The route uses the protocol defined above, and uses
+ * Defines the ``Route`` that handles the ``/exercise`` URLs. The route uses the protocol defined above, and uses
  * Json4s to deal with the JSON gymnastics.
  *
  * Notice in particular the actor lookup (``actorRefFactory.actorSelection(...)``) in order to always get fresh
@@ -35,18 +35,18 @@ object HelloProtocol {
  * definition will most likely live outside this project, possibly maintained by different teams. Nevertheless,
  * in this #Activator, I shall keep it in this module.
  */
-trait HelloRoute extends HttpService with Directives with AskSupport with Json4sSupport {
-  import HelloProtocol._
+trait ExerciseRoute extends HttpService with Directives with AskSupport with Json4sSupport {
+  import ExerciseProtocol._
 
   implicit val ec: ExecutionContext
   implicit def timeout: Timeout
   implicit def json4sFormats: Formats = DefaultFormats
 
-  lazy val helloRoute: Route =
+  lazy val exerciseRoute: Route =
     post {
-      path("hello") {
-        entity(as[Hello]) { cmd =>
-          onComplete((actorRefFactory.actorSelection("/user/hello-actor") ? cmd).mapTo[HelloBack]) {
+      path("exercise") {
+        entity(as[Exercise]) { cmd =>
+          onComplete((actors.exercise.apply ? cmd).mapTo[ExerciseBack]) {
             case Success(v) => complete(v)
             case Failure(e) => complete(e)
           }
@@ -56,14 +56,14 @@ trait HelloRoute extends HttpService with Directives with AskSupport with Json4s
 
 }
 
-class HelloActor extends PersistentActor {
+class ExerciseActor extends PersistentActor {
 
   override def receiveRecover: Receive = {
     case _ =>
   }
 
   override def receiveCommand: Receive = {
-    case _ => sender ! HelloBack("foo")
+    case _ => sender ! ExerciseBack("foo")
   }
 
   override def persistenceId: String = self.path.parent.name + "-" + self.path.name
