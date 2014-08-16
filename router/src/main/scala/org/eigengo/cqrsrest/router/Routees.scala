@@ -39,7 +39,10 @@ class RouteesActor extends Actor {
   private var routees: List[Routee] = List()
 
   private implicit class RichList[A](l: List[A]) {
-    def randomElement: A = l(Random.nextInt(l.size))
+    def randomElement: Option[A] = l match {
+      case Nil => None
+      case nel => Some(nel(Random.nextInt(nel.size)))
+    }
   }
 
   private def stripHeaders(headers: List[HttpHeader] = Nil) =
@@ -58,11 +61,8 @@ class RouteesActor extends Actor {
 
     val side = if (method == HttpMethods.GET || method == HttpMethods.OPTIONS || method == HttpMethods.OPTIONS) Query else Write
 
-    routees.filter(r => r.version == versionPath.toString && r.side == side) match {
-      case Nil => None
-      case elems =>
-        val router = elems.randomElement
-        Some(uri.withHost(router.host).withPort(router.port).withPath(versionlessPath))
+    routees.filter(r => r.version == versionPath.toString && r.side == side).randomElement.map { router =>
+      uri.withHost(router.host).withPort(router.port).withPath(versionlessPath)
     }
   }
 
