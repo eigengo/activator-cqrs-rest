@@ -39,10 +39,7 @@ lazy val runAll = inputKey[Unit]("Runs all modules")
 
 runAll := {
   val s: TaskStreams = streams.value
-  println("*************** Starting Router...")
   ((run in Compile) in router).evaluated
-  Thread.sleep(5000L)
-  println("*************** Router running. Starting write, read and query...")
   ((run in Compile) in read).evaluated
   ((run in Compile) in write).evaluated
   // run query many times...
@@ -53,7 +50,6 @@ runAll := {
   ((run in Compile) in query).evaluated
   ((run in Compile) in query).evaluated
   ((run in Compile) in query).evaluated
-  println("*************** All running. http://localhost:8080/$VERSION/")
 }
 
 logLevel in runAll := Level.Info
