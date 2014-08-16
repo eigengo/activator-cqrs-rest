@@ -17,6 +17,10 @@ lazy val write = Project("cqrs-rest-write", file("write"))
 
 // The read side is for non-domain functionality and may contain mashups
 lazy val read = Project("cqrs-rest-read", file("read"))
+  .settings(commonSettings:_*)
+
+// The read side is for query functionality
+lazy val query = Project("cqrs-rest-query", file("query"))
   .dependsOn(router_api)
   .settings(commonSettings:_*)
 
