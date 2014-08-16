@@ -20,6 +20,8 @@ libraryDependencies ++= Seq(
 
 fork in Test := false
 
+fork in run := true
+
 parallelExecution in Test := false
 
 testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-h", target(_ / "html-reports").value.getPath)

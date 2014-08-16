@@ -10,7 +10,7 @@ import scala.concurrent.ExecutionContext
 
 object ExerciseProtocol {
 
-  case class Exercise(what: String, duration: Int)
+  case class Exercise(processName: String, what: String, duration: Int)
 
 }
 
@@ -21,10 +21,12 @@ trait ExerciseRoute extends HttpService with Directives with AskSupport with Jso
   implicit def timeout: Timeout
   implicit def json4sFormats: Formats = DefaultFormats
 
+  val processName = java.lang.management.ManagementFactory.getRuntimeMXBean.getName
+
   lazy val exerciseRoute: Route =
     get {
       path("exercise") {
-        complete(List(Exercise("gym::abs", 30), Exercise("cycle::intervals", 60), Exercise("cycle::hills", 124)))
+        complete(List(Exercise(processName, "gym::abs", 30), Exercise(processName, "cycle::intervals", 60), Exercise(processName, "cycle::hills", 124)))
       }
     }
 

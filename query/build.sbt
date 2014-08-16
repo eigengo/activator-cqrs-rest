@@ -1,4 +1,4 @@
-name := "cqrs-rest-write"
+name := "cqrs-rest-query"
 
 val Akka  = "2.3.5"
 val Spray = "1.3.1"

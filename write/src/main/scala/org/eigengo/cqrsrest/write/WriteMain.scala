@@ -3,7 +3,7 @@ package org.eigengo.cqrsrest.write
 import akka.actor.{ActorSystem, Props}
 import akka.io.IO
 import akka.util.Timeout
-import org.eigengo.cqrsrest.router.{RouterProtocol, Router, Registration}
+import org.eigengo.cqrsrest.router.{Router, RouterProtocol}
 import org.json4s.{DefaultFormats, Formats}
 import spray.can.Http
 import spray.routing.HttpServiceActor
