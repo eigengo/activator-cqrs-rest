@@ -1,8 +1,8 @@
 *.class
 *.log
 
-# WeightWatchers publishing strategy specifiC
-artifacts
+# Akka Persistence Journal
+journal/
 
 # sbt specific
 dist/*
