@@ -31,8 +31,12 @@ class RouteesActor extends Actor {
     def randomElement: A = l(Random.nextInt(l.size))
   }
 
-  private def stripHostHeader(headers: List[HttpHeader] = Nil) =
-    headers filterNot (header => header is HttpHeaders.Host.lowercaseName)
+  private def stripHeaders(headers: List[HttpHeader] = Nil) =
+    headers filterNot { header =>
+      (header is HttpHeaders.`Host`.lowercaseName) ||
+      (header is HttpHeaders.`Content-Type`.lowercaseName) ||
+      (header is HttpHeaders.`Content-Length`.lowercaseName)
+    }
 
   private def findRoutee(uri: Uri, method: HttpMethod): Option[Uri] = {
     val path            = uri.path.tail
@@ -67,7 +71,7 @@ class RouteesActor extends Actor {
         ctx.complete(HttpResponse(status = StatusCodes.BadGateway, entity = HttpEntity(s"No routee for path ${request.uri.path}")))
       }
       { updatedUri =>
-        val updatedRequest = request.copy(uri = updatedUri, headers = stripHostHeader(request.headers))
+        val updatedRequest = request.copy(uri = updatedUri, headers = stripHeaders(request.headers))
         IO(Http)(context.system) tell(updatedRequest, ctx.responder)
       }
   }
