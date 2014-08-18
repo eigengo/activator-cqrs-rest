@@ -1,11 +1,8 @@
 import sbt._
 
 /**
- * Settings here do not apply on Jenkins. Adding a resolver here without informing DevOps may cause build
- * failures: DevOps overrides the resolvers, and uses local Artifactory as a proxy. If the dependency
- * you need is not found in the Artifactory, the build will fail. In that case, contact DevOps with the
- * repository URL.
- * To set this, run with ``-Dsbt.resolver.url=<REPO-URL>``
+ * The resolvers for the project's dependencies: the standard ones + Scala Linter + 
+ * Akka Persistence in Cassanra.
  */
 object ResolverSettings {
  
